@@ -32,7 +32,7 @@ public interface GameMapper {
     @Mapping(target = "homeScore", source = "matchDto.score.fullTime.home")
     @Mapping(target = "awayScore", source = "matchDto.score.fullTime.away")
     @Mapping(target = "status", source = "matchDto.status")
-    @Mapping(target = "kickoffTime", source = "match    Dto.utcDate")
+    @Mapping(target = "kickoffTime", source = "matchDto.utcDate")
     @Mapping(target = "completedAt", ignore = true)
     @Mapping(target = "homeTeam", source = "homeTeam")
     @Mapping(target = "awayTeam", source = "awayTeam")
