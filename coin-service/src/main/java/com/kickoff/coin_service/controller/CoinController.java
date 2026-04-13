@@ -3,7 +3,6 @@ package com.kickoff.coin_service.controller;
 import com.kickoff.coin_service.dto.BalanceDto;
 import com.kickoff.coin_service.dto.SpendCoinsRequest;
 import com.kickoff.coin_service.dto.TransactionLogDto;
-import com.kickoff.coin_service.model.TransactionType;
 import com.kickoff.coin_service.service.CoinService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,7 @@ public class CoinController {
     @PostMapping("/spend")
     @Operation(summary = "Post a debit transaction")
     public ResponseEntity<String> create(@RequestBody SpendCoinsRequest request) {
-        coinService.processTransaction(request.userId(), request.amount(), TransactionType.DEBIT, request.reason());
+        coinService.processTransaction(request.userId(), request.amount(), request.reason());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

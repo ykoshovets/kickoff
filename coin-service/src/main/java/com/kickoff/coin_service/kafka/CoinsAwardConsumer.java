@@ -1,7 +1,6 @@
 package com.kickoff.coin_service.kafka;
 
 import com.kickoff.coin_service.event.CoinsAwardedEvent;
-import com.kickoff.coin_service.model.TransactionType;
 import com.kickoff.coin_service.service.CoinService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -23,8 +22,6 @@ public class CoinsAwardConsumer {
     )
     public void consume(CoinsAwardedEvent event) {
         log.info("Received CoinsAwardedEvent for user {}", event.userId());
-        coinService.processTransaction(
-                event.userId(), event.amount(),
-                TransactionType.CREDIT, event.reason());
+        coinService.processTransaction(event.userId(), event.amount(), event.reason());
     }
 }

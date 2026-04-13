@@ -32,21 +32,20 @@ public class CoinService {
     }
 
     @Transactional
-    public void processTransaction(UUID userId, Integer amount,
-                                   TransactionType type, TransactionReason reason) {
+    public void processTransaction(UUID userId, Integer amount, TransactionReason reason) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseGet(() -> createWallet(userId));
 
-        if (type == TransactionType.DEBIT && wallet.getBalance() < amount) {
+        if (reason.getTransactionType() == TransactionType.DEBIT && wallet.getBalance() < amount) {
             throw new IllegalStateException("Insufficient balance");
         }
 
-        int delta = type == TransactionType.DEBIT ? -amount : amount;
+        int delta = reason.getTransactionType() == TransactionType.DEBIT ? -amount : amount;
         wallet.setBalance(wallet.getBalance() + delta);
 
         walletRepository.save(wallet);
         transactionLogRepository.save(
-                new TransactionLog(amount, userId, type, reason));
+                new TransactionLog(amount, userId, reason.getTransactionType(), reason));
     }
 
     public BalanceDto getBalance(UUID userId) {
