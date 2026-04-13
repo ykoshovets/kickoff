@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>match-service</module>
     </modules>
 
 </project>
