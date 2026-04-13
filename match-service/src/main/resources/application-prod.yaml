@@ -1,30 +1,33 @@
 spring:
   application:
-    name: pack-service
+    name: match-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=pack&TimeZone=UTC
-    username: kickoff
-    password: kickoff
+    url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=match&TimeZone=UTC
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: false
     properties:
       hibernate:
-        default_schema: pack
+        default_schema: match
+    show-sql: false
   flyway:
-    schemas: pack
-    default-schema: pack
+    schemas: match
+    default-schema: match
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_ENDPOINT}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
+  threads:
+    virtual:
+      enabled: true
 
 server:
-  port: 8086
+  port: 8081
 
 management:
   endpoints:
@@ -34,13 +37,14 @@ management:
 
 kafka:
   topics:
-    pack-opened: pack.opened
-
-coin-service:
-  url: http://localhost:8083
+    match-results: match.results
 
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+football:
+  api:
+    key: ${FOOTBALL_API_KEY}

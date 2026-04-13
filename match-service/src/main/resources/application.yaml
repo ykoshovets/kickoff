@@ -2,7 +2,7 @@ spring:
   application:
     name: match-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?TimeZone=UTC
+    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=match&TimeZone=UTC
     username: kickoff
     password: kickoff
   jpa:
@@ -47,4 +47,4 @@ springdoc:
 
 football:
   api:
-    key: 7118158df2974ef2ad2a02ce7b00d6ff
+    key: ${FOOTBALL_API_KEY:placeholder}

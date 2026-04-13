@@ -2,9 +2,9 @@ spring:
   application:
     name: coin-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=coin&TimeZone=UTC
-    username: kickoff
-    password: kickoff
+    url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=coin&TimeZone=UTC
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -16,7 +16,7 @@ spring:
     schemas: coin
     default-schema: coin
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_ENDPOINT}
     consumer:
       group-id: coin-group
       auto-offset-reset: earliest
@@ -27,7 +27,7 @@ spring:
         spring.json.value.default.type: com.kickoff.coin_service.event.CoinsAwardedEvent
 
 server:
-  port: 8083
+  port: 8085
 
 management:
   endpoints:

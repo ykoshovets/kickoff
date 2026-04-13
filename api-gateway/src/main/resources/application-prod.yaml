@@ -1,0 +1,46 @@
+spring:
+  data:
+    redis:
+      host: ${ELASTICACHE_ENDPOINT}
+      port: 6379
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: http://${USER_SERVICE_HOST}:8084
+              predicates:
+                - Path=/api/v1/users/**
+            - id: match-service
+              uri: http://${MATCH_SERVICE_HOST}:8081
+              predicates:
+                - Path=/api/v1/matches/**,/api/v1/players/**,/api/v1/games/**
+            - id: prediction-service
+              uri: http://${PREDICTION_SERVICE_HOST}:8082
+              predicates:
+                - Path=/api/v1/predictions/**
+            - id: coin-service
+              uri: http://${COIN_SERVICE_HOST}:8083
+              predicates:
+                - Path=/api/v1/coins/**
+            - id: card-service
+              uri: http://${CARD_SERVICE_HOST}:8085
+              predicates:
+                - Path=/api/v1/cards/**
+            - id: pack-service
+              uri: http://${PACK_SERVICE_HOST}:8086
+              predicates:
+                - Path=/api/v1/packs/**
+            - id: trade-service
+              uri: http://${TRADE_SERVICE_HOST}:8087
+              predicates:
+                - Path=/api/v1/trades/**
+            - id: fantasy-service
+              uri: http://${FANTASY_SERVICE_HOST}:8088
+              predicates:
+                - Path=/api/v1/fantasy/**
+            - id: notification-service
+              uri: http://${NOTIFICATION_SERVICE_HOST}:8089
+              predicates:
+                - Path=/api/v1/notifications/**

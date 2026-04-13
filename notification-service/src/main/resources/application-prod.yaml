@@ -1,33 +1,36 @@
 spring:
   application:
-    name: coin-service
+    name: notification-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=coin&TimeZone=UTC
-    username: kickoff
-    password: kickoff
+    url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=notification&TimeZone=UTC
+    username: ${RDS_ENDPOINT}
+    password: ${RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
-        default_schema: coin
-    show-sql: false
+        default_schema: notification
   flyway:
-    schemas: coin
-    default-schema: coin
+    schemas: notification
+    default-schema: notification
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_ENDPOINT}
     consumer:
-      group-id: coin-group
+      group-id: notification-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.kickoff.coin_service.event.CoinsAwardedEvent
+  data:
+    redis:
+      host: ${ELASTICACHE_ENDPOINT}
+      port: 6379
 
 server:
-  port: 8083
+  port: 8089
 
 management:
   endpoints:
@@ -37,6 +40,7 @@ management:
 
 kafka:
   topics:
+    trade-status-changed: trade.status-changed
     coins-award: coins.award
 
 springdoc:

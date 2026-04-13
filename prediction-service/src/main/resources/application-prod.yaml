@@ -2,9 +2,9 @@ spring:
   application:
     name: prediction-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=prediction&TimeZone=UTC
-    username: kickoff
-    password: kickoff
+    url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=prediction&TimeZone=UTC
+    username: ${RDS_ENDPOINT}
+    password: ${RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -16,7 +16,7 @@ spring:
     schemas: prediction
     default-schema: prediction
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_ENDPOINT}
     consumer:
       group-id: prediction-group
       auto-offset-reset: earliest

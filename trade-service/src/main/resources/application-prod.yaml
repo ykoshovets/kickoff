@@ -1,22 +1,22 @@
 spring:
   application:
-    name: pack-service
+    name: trade-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=pack&TimeZone=UTC
-    username: kickoff
-    password: kickoff
+    url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=trade&TimeZone=UTC
+    username: ${RDS_ENDPOINT}
+    password: ${RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
-        default_schema: pack
+        default_schema: trade
   flyway:
-    schemas: pack
-    default-schema: pack
+    schemas: trade
+    default-schema: trade
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_ENDPOINT}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -24,7 +24,7 @@ spring:
         spring.json.add.type.headers: false
 
 server:
-  port: 8086
+  port: 8087
 
 management:
   endpoints:
@@ -34,10 +34,10 @@ management:
 
 kafka:
   topics:
-    pack-opened: pack.opened
+    trade-status-changed: trade.status-changed
 
-coin-service:
-  url: http://localhost:8083
+card-service:
+  url: http://${CARD_SERVICE_HOST}:8085
 
 springdoc:
   api-docs:

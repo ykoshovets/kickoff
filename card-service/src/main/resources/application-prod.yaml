@@ -1,41 +1,42 @@
 spring:
   application:
-    name: prediction-service
+    name: card-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=prediction&TimeZone=UTC
-    username: kickoff
-    password: kickoff
+    url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=card&TimeZone=UTC
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
-        default_schema: prediction
-    show-sql: false
+        default_schema: card
   flyway:
-    schemas: prediction
-    default-schema: prediction
+    schemas: card
+    default-schema: card
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_ENDPOINT}
     consumer:
-      group-id: prediction-group
+      group-id: card-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.kickoff.prediction_service.event.MatchCompletedEvent
+        spring.json.value.default.type: com.kickoff.card_service.event.PackOpenedEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
-  threads:
-    virtual:
-      enabled: true
+  data:
+    redis:
+      host: ${ELASTICACHE_ENDPOINT}
+      port: 6379
 
 server:
-  port: 8082
+  port: 8085
 
 management:
   endpoints:
@@ -45,8 +46,11 @@ management:
 
 kafka:
   topics:
-    match-results: match.results
+    pack-opened: pack.opened
     coins-award: coins.award
+
+match-service:
+  url: http://${MATCH_SERVICE_HOST}:8081
 
 springdoc:
   api-docs:
