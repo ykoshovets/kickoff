@@ -1,3 +1,35 @@
 spring:
   application:
     name: match-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kickoff?TimeZone=UTC
+    username: kickoff
+    password: kickoff
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: match
+    show-sql: false
+  flyway:
+    schemas: match
+    default-schema: match
+  kafka:
+    bootstrap-servers: localhost:9092
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+football:
+  api:
+    key: 7118158df2974ef2ad2a02ce7b00d6ff
