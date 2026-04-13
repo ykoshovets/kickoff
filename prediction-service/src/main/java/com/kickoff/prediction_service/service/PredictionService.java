@@ -121,8 +121,7 @@ public class PredictionService {
         CoinsAwardedEvent event = new CoinsAwardedEvent(
                 prediction.getUserId(),
                 prediction.getCoinsAwarded(),
-                prediction.getResult(),
-                prediction.getId()
+                prediction.getResult()
         );
 
         kafkaTemplate.send(coinsAwardTopic,

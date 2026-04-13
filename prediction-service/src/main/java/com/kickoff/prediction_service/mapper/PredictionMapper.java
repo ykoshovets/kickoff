@@ -19,6 +19,7 @@ public interface PredictionMapper {
     @Mapping(target = "createdAt", ignore = true)
     void map(PredictionRequest request, @MappingTarget Prediction prediction);
 
+    @Mapping(target = "predictionResult", source = "result")
     PredictionResponse toResponse(Prediction prediction);
 
     List<PredictionResponse> toResponse(List<Prediction> predictions);

@@ -7,7 +7,6 @@ import java.util.UUID;
 public record CoinsAwardedEvent(
         UUID userId,
         Integer amount,
-        PredictionResult reason,
-        UUID referenceId
+        PredictionResult reason
 ) {
 }
