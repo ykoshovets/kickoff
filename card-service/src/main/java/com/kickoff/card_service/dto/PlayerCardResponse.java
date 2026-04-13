@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record PlayerCardResponse(
         UUID id,
+        UUID userId,
         Integer playerId,
         String playerName,
         Integer teamId,

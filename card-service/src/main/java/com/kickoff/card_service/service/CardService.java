@@ -1,8 +1,10 @@
 package com.kickoff.card_service.service;
 
+import com.kickoff.card_service.dto.PlayerCardResponse;
 import com.kickoff.card_service.dto.PlayerDto;
 import com.kickoff.card_service.event.CoinsAwardedEvent;
 import com.kickoff.card_service.event.PackOpenedEvent;
+import com.kickoff.card_service.mapper.CardMapper;
 import com.kickoff.card_service.model.CardTier;
 import com.kickoff.card_service.model.CollectionProgress;
 import com.kickoff.card_service.model.PlayerCard;
@@ -34,6 +36,7 @@ public class CardService {
     private final CollectionProgressRepository collectionProgressRepository;
     private final CardGenerationService cardGenerationService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final CardMapper cardMapper;
 
     @Value("${kafka.topics.coins-award}")
     private String coinsAwardTopic;
@@ -41,11 +44,13 @@ public class CardService {
     public CardService(PlayerCardRepository playerCardRepository,
                        CollectionProgressRepository collectionProgressRepository,
                        CardGenerationService cardGenerationService,
-                       KafkaTemplate<String, Object> kafkaTemplate) {
+                       KafkaTemplate<String, Object> kafkaTemplate,
+                       CardMapper cardMapper) {
         this.playerCardRepository = playerCardRepository;
         this.collectionProgressRepository = collectionProgressRepository;
         this.cardGenerationService = cardGenerationService;
         this.kafkaTemplate = kafkaTemplate;
+        this.cardMapper = cardMapper;
     }
 
     @Transactional
@@ -144,6 +149,21 @@ public class CardService {
                     p.setUserId(userId);
                     return p;
                 });
+    }
+
+    @Transactional
+    public void transferCard(UUID cardId, UUID newOwnerId) {
+        PlayerCard card = playerCardRepository.findById(cardId)
+                .orElseThrow(() -> new IllegalArgumentException("Card not found: " + cardId));
+        card.setUserId(newOwnerId);
+        playerCardRepository.save(card);
+        log.info("Transferred card {} to user {}", cardId, newOwnerId);
+    }
+
+    public PlayerCardResponse getCard(UUID cardId) {
+        return playerCardRepository.findById(cardId)
+                .map(cardMapper::toResponse)
+                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
     }
 
     private void updateCollectionProgress(UUID userId, PlayerCard card, boolean adding) {

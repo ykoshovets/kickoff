@@ -10,10 +10,11 @@ import java.util.UUID;
 
 public interface PlayerCardRepository extends JpaRepository<PlayerCard, UUID> {
 
+    Optional<PlayerCard> findById(UUID id);
+
     List<PlayerCard> findAllByUserId(UUID userId);
 
     Optional<PlayerCard> findByUserIdAndPlayerId(UUID userId, Integer playerId);
 
-    List<PlayerCard> findByUserIdAndPlayerIdAndTier(
-            UUID userId, Integer playerId, CardTier tier);
+    List<PlayerCard> findByUserIdAndPlayerIdAndTier(UUID userId, Integer playerId, CardTier tier);
 }

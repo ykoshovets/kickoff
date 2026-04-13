@@ -37,6 +37,11 @@ public class CardController {
         return cardMapper.toResponse(cardService.getCollectionProgress(userId));
     }
 
+    @GetMapping("/{cardId}")
+    public ResponseEntity<PlayerCardResponse> getCard(@PathVariable UUID cardId) {
+        return ResponseEntity.ok(cardService.getCard(cardId));
+    }
+
     @PostMapping("/upgrade")
     @Operation(summary = "Upgrade two cards of same tier")
     public ResponseEntity<Void> upgrade(
@@ -52,6 +57,15 @@ public class CardController {
             @PathVariable UUID cardId,
             @RequestParam UUID userId) {
         cardService.sellCard(cardId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{cardId}/transfer")
+    @Operation(summary = "Transfer card ownership")
+    public ResponseEntity<Void> transfer(
+            @PathVariable UUID cardId,
+            @RequestParam UUID newOwnerId) {
+        cardService.transferCard(cardId, newOwnerId);
         return ResponseEntity.ok().build();
     }
 }
