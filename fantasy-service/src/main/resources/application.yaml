@@ -1,3 +1,53 @@
 spring:
   application:
     name: fantasy-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=fantasy&TimeZone=UTC
+    username: kickoff
+    password: kickoff
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: fantasy
+  flyway:
+    schemas: fantasy
+    default-schema: fantasy
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: fantasy-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.kickoff.fantasy_service.event.MatchCompletedEvent
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  port: 8088
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+kafka:
+  topics:
+    match-results: match.results
+
+card-service:
+  url: http://localhost:8085
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
