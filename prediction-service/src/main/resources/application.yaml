@@ -1,3 +1,55 @@
 spring:
   application:
     name: prediction-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kickoff?TimeZone=UTC
+    username: kickoff
+    password: kickoff
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: prediction
+    show-sql: false
+  flyway:
+    schemas: prediction
+    default-schema: prediction
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: prediction-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.kickoff.prediction_service.event.MatchCompletedEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+kafka:
+  topics:
+    match-results: match.results
+    coins-award: coins.award
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
