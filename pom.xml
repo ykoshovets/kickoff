@@ -12,6 +12,15 @@
 
     <modules>
         <module>match-service</module>
+        <module>prediction-service</module>
+        <module>coin-service</module>
+        <module>pack-service</module>
+        <module>card-service</module>
+        <module>trade-service</module>
+        <module>fantasy-service</module>
+        <module>notification-service</module>
+        <module>user-service</module>
+        <module>api-gateway</module>
     </modules>
 
 </project>
