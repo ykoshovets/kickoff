@@ -1,3 +1,59 @@
 spring:
   application:
     name: card-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kickoff?currentSchema=card&TimeZone=UTC
+    username: kickoff
+    password: kickoff
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: card
+  flyway:
+    schemas: card
+    default-schema: card
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: card-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.kickoff.card_service.event.PackOpenedEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  port: 8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+kafka:
+  topics:
+    pack-opened: pack.opened
+    coins-award: coins.award
+
+match-service:
+  url: http://localhost:8081
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

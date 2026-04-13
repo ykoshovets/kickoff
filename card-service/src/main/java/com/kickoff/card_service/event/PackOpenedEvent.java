@@ -1,0 +1,11 @@
+package com.kickoff.card_service.event;
+
+import java.util.UUID;
+
+public record PackOpenedEvent(
+        UUID userId,
+        UUID packId,
+        Integer numberOfCards,
+        Integer guaranteedTeamId
+) {
+}
