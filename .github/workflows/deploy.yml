@@ -93,16 +93,16 @@ jobs:
             sleep 30
 
             docker compose -f /home/ubuntu/kickoff/docker-compose.prod.yml up -d user-service coin-service
-            sleep 30
+            sleep 60
 
             docker compose -f /home/ubuntu/kickoff/docker-compose.prod.yml up -d match-service api-gateway
-            sleep 30
+            sleep 60
 
             docker compose -f /home/ubuntu/kickoff/docker-compose.prod.yml up -d card-service pack-service
-            sleep 30
+            sleep 60
 
             docker compose -f /home/ubuntu/kickoff/docker-compose.prod.yml up -d prediction-service trade-service
-            sleep 30
+            sleep 60
 
             docker compose -f /home/ubuntu/kickoff/docker-compose.prod.yml up -d fantasy-service notification-service
 
