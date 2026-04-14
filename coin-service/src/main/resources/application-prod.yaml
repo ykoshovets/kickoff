@@ -27,7 +27,7 @@ spring:
         spring.json.value.default.type: com.kickoff.coin_service.event.CoinsAwardedEvent
 
 server:
-  port: 8085
+  port: 8083
 
 management:
   endpoints:
