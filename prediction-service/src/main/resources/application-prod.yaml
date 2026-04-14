@@ -3,7 +3,7 @@ spring:
     name: prediction-service
   datasource:
     url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=prediction&TimeZone=UTC
-    username: ${RDS_ENDPOINT}
+    username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
   jpa:
     hibernate:

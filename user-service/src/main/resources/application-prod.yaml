@@ -3,7 +3,7 @@ spring:
     name: user-service
   datasource:
     url: jdbc:postgresql://${RDS_ENDPOINT}/kickoff?currentSchema=account&TimeZone=UTC
-    username: ${RDS_ENDPOINT}
+    username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
   flyway:
     schemas: account
