@@ -43,7 +43,7 @@ kafka:
     match-results: match.results
 
 card-service:
-  url: http://${CARD_SERVICE_HOST}:8085
+  url: http://card-service:8085
 
 springdoc:
   api-docs:

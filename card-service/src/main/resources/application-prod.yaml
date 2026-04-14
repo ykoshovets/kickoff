@@ -50,7 +50,7 @@ kafka:
     coins-award: coins.award
 
 match-service:
-  url: http://${MATCH_SERVICE_HOST}:8081
+  url: http://match-service:8081
 
 springdoc:
   api-docs:
