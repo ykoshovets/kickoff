@@ -38,7 +38,10 @@ public interface GameMapper {
     @Mapping(target = "awayTeam", source = "awayTeam")
     Game mapCreate(MatchDto matchDto, Team homeTeam, Team awayTeam);
 
+    @Mapping(target = "homeTeamTla", source = "homeTeam.tla")
+    @Mapping(target = "awayTeamTla", source = "awayTeam.tla")
     GameResponseDto toResponse(Game game);
+
     List<GameResponseDto> toResponse(List<Game> games);
 
     default OffsetDateTime map(String date) {

@@ -81,7 +81,7 @@ public class GameCalendarService {
     }
 
     public List<Game> findByGameweek(Integer gameweek) {
-        return gameRepository.findByGameweek(gameweek);
+        return gameRepository.findByGameweekWithTeams(gameweek);
     }
 
     public Optional<Game> findByExternalId(Integer externalId) {
