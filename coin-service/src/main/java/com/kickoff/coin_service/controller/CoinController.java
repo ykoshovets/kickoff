@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/coins")
-@Tag(name = "Coins", description = "coins award endpoints")
+@Tag(name = "Coins", description = "User coin wallet management and transaction history")
 public class CoinController {
 
     private final CoinService coinService;
@@ -27,20 +27,20 @@ public class CoinController {
     }
 
     @PostMapping("/spend")
-    @Operation(summary = "Post a debit transaction")
+    @Operation(summary = "Deduct coins from wallet", description = "Called by pack-service when a user buys a pack. Returns 409 if insufficient balance")
     public ResponseEntity<String> spend(@Valid @RequestBody SpendCoinsRequest request) {
         coinService.processTransaction(request.userId(), request.amount(), TransactionReason.valueOf(request.reason()));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/balance/{userId}")
-    @Operation(summary = "Get user balance")
+    @Operation(summary = "Get coin balance", description = "Returns current coin balance. Returns 0 if user has never received coins")
     public BalanceDto getBalance(@PathVariable UUID userId) {
         return coinService.getBalance(userId);
     }
 
     @GetMapping("/history/{userId}")
-    @Operation(summary = "Get user transaction history")
+    @Operation(summary = "Get transaction history", description = "Returns all credit and debit transactions ordered by date. Includes reason for each transaction")
     public List<TransactionLogDto> getTransactionHistory(@PathVariable UUID userId) {
         return coinService.getTransactionHistory(userId);
     }

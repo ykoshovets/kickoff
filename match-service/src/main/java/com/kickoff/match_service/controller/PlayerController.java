@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/players")
-@Tag(name = "Players", description = "Player data endpoints")
+@Tag(name = "Players", description = "Premier League player data — used by card-service for card generation")
 public class PlayerController {
 
     private final PlayerService playerService;
@@ -24,12 +24,13 @@ public class PlayerController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all players", description = "Returns all 300 Premier League players with rarity weights. Called by card-service and cached in Redis for 30 days")
     public List<PlayerResponse> getAll() {
         return playerService.getAll();
     }
 
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get player by external ID")
+    @Operation(summary = "Get player by external ID", description = "Returns a single player using the football-data.org external ID")
     public ResponseEntity<PlayerResponse> getByExternalId(@PathVariable Integer externalId) {
         return playerService.getByExternalId(externalId)
                 .map(ResponseEntity::ok)

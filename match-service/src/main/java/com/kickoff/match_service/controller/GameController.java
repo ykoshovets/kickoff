@@ -12,11 +12,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/games")
-@Tag(name = "Games", description = "Premier League match data")
+@Tag(name = "Games", description = "Premier League fixture and result data")
 public class GameController {
 
     private final GameCalendarService gameCalendarService;
     private final GameMapper gameMapper;
+
     public GameController(GameMapper gameMapper,
                           GameCalendarService gameCalendarService) {
         this.gameCalendarService = gameCalendarService;
@@ -24,11 +25,13 @@ public class GameController {
     }
 
     @GetMapping
+    @Operation(summary = "Get games by gameweek", description = "Returns all 10 Premier League fixtures for the specified gameweek with scores and team details")
     public List<GameResponseDto> getByGameweek(@RequestParam Integer gameweek) {
         return gameMapper.toResponse(gameCalendarService.findByGameweek(gameweek));
     }
 
     @GetMapping("/{externalId}")
+    @Operation(summary = "Get game by external ID", description = "Returns a single game using the football-data.org external ID. Used by prediction-service for kickoff time validation")
     public ResponseEntity<GameResponseDto> getByExternalId(@PathVariable Integer externalId) {
         return gameCalendarService.findByExternalId(externalId)
                 .map(gameMapper::toResponse)
@@ -37,7 +40,7 @@ public class GameController {
     }
 
     @PostMapping("/fetch/{gameweek}")
-    @Operation(summary = "Manually trigger result fetch for a gameweek")
+    @Operation(summary = "Manually trigger gameweek fetch", description = "Fetches and processes results for a specific gameweek from football-data.org. Publishes match.results Kafka events for each finished game. Automated daily at 1AM")
     public ResponseEntity<String> fetchGameweek(@PathVariable Integer gameweek) {
         gameCalendarService.fetchAndProcessGameweek(gameweek);
         return ResponseEntity.ok("Fetch triggered for gameweek " + gameweek);
