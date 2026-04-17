@@ -85,6 +85,6 @@ public class GameCalendarService {
     }
 
     public Optional<Game> findByExternalId(Integer externalId) {
-        return gameRepository.findByExternalId(externalId);
+        return gameRepository.findByExternalIdWithTeams(externalId);
     }
 }

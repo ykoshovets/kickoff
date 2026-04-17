@@ -5,7 +5,6 @@ import com.kickoff.match_service.event.MatchCompletedEvent;
 import com.kickoff.match_service.mapper.GameMapper;
 import com.kickoff.match_service.model.Game;
 import com.kickoff.match_service.repository.GameRepository;
-import com.kickoff.match_service.repository.TeamRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,10 +17,7 @@ import java.time.OffsetDateTime;
 @Slf4j
 public class GameResultProcessor {
 
-    private static final String FINISHED = "FINISHED";
-
     private final GameRepository gameRepository;
-    private final TeamRepository teamRepository;
     private final GameMapper gameMapper;
     private final KafkaTemplate<String, MatchCompletedEvent> kafkaTemplate;
 
@@ -29,18 +25,16 @@ public class GameResultProcessor {
     private String matchResultsTopic;
 
     public GameResultProcessor(GameRepository gameRepository,
-                               TeamRepository teamRepository,
                                GameMapper gameMapper,
                                KafkaTemplate<String, MatchCompletedEvent> kafkaTemplate) {
         this.gameRepository = gameRepository;
-        this.teamRepository = teamRepository;
         this.gameMapper = gameMapper;
         this.kafkaTemplate = kafkaTemplate;
     }
 
     @Transactional
     public void processResult(MatchDto matchDto) {
-        gameRepository.findByExternalId(matchDto.id())
+        gameRepository.findByExternalIdWithTeams(matchDto.id())
                 .ifPresentOrElse(
                         game -> {
                             if (game.getCompletedAt() != null) {

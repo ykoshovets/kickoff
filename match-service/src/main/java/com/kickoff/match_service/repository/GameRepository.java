@@ -10,7 +10,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface GameRepository extends JpaRepository<Game, UUID> {
-    Optional<Game> findByExternalId(Integer externalId);
+
+    @Query("SELECT g FROM Game g JOIN FETCH g.homeTeam JOIN FETCH g.awayTeam WHERE g.externalId = :externalId")
+    Optional<Game> findByExternalIdWithTeams(@Param("externalId") Integer externalId);
 
     @Query("SELECT g FROM Game g JOIN FETCH g.homeTeam JOIN FETCH g.awayTeam WHERE g.gameweek = :gameweek")
     List<Game> findByGameweekWithTeams(@Param("gameweek") Integer gameweek);
