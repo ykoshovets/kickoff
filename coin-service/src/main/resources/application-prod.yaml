@@ -28,6 +28,9 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
         spring.json.value.default.type: com.kickoff.coin_service.event.CoinsAwardedEvent
+  threads:
+    virtual:
+      enabled: true
 
 server:
   port: 8083

@@ -18,6 +18,9 @@ spring:
     properties:
       hibernate:
         default_schema: account
+  threads:
+    virtual:
+      enabled: true
 
 server:
   port: 8084

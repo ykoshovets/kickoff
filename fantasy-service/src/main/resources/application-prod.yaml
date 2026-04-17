@@ -31,6 +31,9 @@ spring:
     redis:
       host: ${ELASTICACHE_ENDPOINT}
       port: 6379
+  threads:
+    virtual:
+      enabled: true
 
 server:
   port: 8088
