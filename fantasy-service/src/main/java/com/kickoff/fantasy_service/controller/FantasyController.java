@@ -7,6 +7,7 @@ import com.kickoff.fantasy_service.dto.LeaderboardEntry;
 import com.kickoff.fantasy_service.service.FantasyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +27,7 @@ public class FantasyController {
 
     @PostMapping("/team")
     @Operation(summary = "Submit fantasy team for a gameweek")
-    public ResponseEntity<FantasyTeamResponse> submitTeam(
-            @RequestBody FantasyTeamRequest request) {
+    public ResponseEntity<FantasyTeamResponse> submitTeam(@Valid @RequestBody FantasyTeamRequest request) {
         return ResponseEntity.ok(fantasyService.submitTeam(request));
     }
 

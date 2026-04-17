@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class FantasyService {
 
     private static final String LEADERBOARD_KEY = "fantasy:leaderboard:";
-    private static final int MAX_TEAM_SIZE = 11;
 
     private final FantasyTeamRepository fantasyTeamRepository;
     private final FantasyScoreRepository fantasyScoreRepository;
@@ -43,10 +42,6 @@ public class FantasyService {
 
     @Transactional
     public FantasyTeamResponse submitTeam(FantasyTeamRequest request) {
-        if (request.playerCardIds().size() != MAX_TEAM_SIZE) {
-            throw new IllegalArgumentException("Team must have exactly 11 players");
-        }
-
         validateCardsOwnedByUser(request.userId(), request.playerCardIds());
 
         FantasyTeam team = fantasyTeamRepository

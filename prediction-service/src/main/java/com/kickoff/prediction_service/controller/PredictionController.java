@@ -6,6 +6,7 @@ import com.kickoff.prediction_service.dto.PredictionResponse;
 import com.kickoff.prediction_service.service.PredictionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class PredictionController {
 
     @PostMapping
     @Operation(summary = "Create a prediction for a match")
-    public ResponseEntity<PredictionResponse> create(@RequestBody PredictionRequest request) {
+    public ResponseEntity<PredictionResponse> create(@Valid @RequestBody PredictionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(predictionService.createPrediction(request));
     }

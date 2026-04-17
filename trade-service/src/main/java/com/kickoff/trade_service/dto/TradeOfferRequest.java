@@ -1,11 +1,13 @@
 package com.kickoff.trade_service.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.UUID;
 
 public record TradeOfferRequest(
-        UUID initiatorId,
-        UUID receiverId,
-        UUID offeredCardId,
-        UUID requestedCardId
+        @NotNull UUID initiatorId,
+        @NotNull UUID receiverId,
+        @NotNull UUID offeredCardId,
+        @NotNull UUID requestedCardId
 ) {
 }

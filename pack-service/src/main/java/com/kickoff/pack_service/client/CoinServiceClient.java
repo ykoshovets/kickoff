@@ -1,11 +1,11 @@
 package com.kickoff.pack_service.client;
 
-import com.kickoff.pack_service.event.SpendCoinsRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,7 +24,11 @@ public class CoinServiceClient {
         try {
             restClient.post()
                     .uri("/api/v1/coins/spend")
-                    .body(new SpendCoinsRequest(userId, amount, reason))
+                    .body(Map.of(
+                            "userId", userId.toString(),
+                            "amount", amount,
+                            "reason", reason
+                    ))
                     .retrieve()
                     .toBodilessEntity();
             return true;

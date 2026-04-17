@@ -1,6 +1,14 @@
 package com.kickoff.coin_service.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.util.UUID;
 
-public record SpendCoinsRequest(UUID userId, Integer amount, String reason) {
+public record SpendCoinsRequest(
+        @NotNull UUID userId,
+        @NotNull @Positive Integer amount,
+        @NotBlank String reason
+) {
 }

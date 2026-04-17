@@ -7,6 +7,7 @@ import com.kickoff.coin_service.model.TransactionReason;
 import com.kickoff.coin_service.service.CoinService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class CoinController {
 
     @PostMapping("/spend")
     @Operation(summary = "Post a debit transaction")
-    public ResponseEntity<String> create(@RequestBody SpendCoinsRequest request) {
+    public ResponseEntity<String> spend(@Valid @RequestBody SpendCoinsRequest request) {
         coinService.processTransaction(request.userId(), request.amount(), TransactionReason.valueOf(request.reason()));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
