@@ -1,6 +1,7 @@
 package com.kickoff.match_service.service;
 
 import com.kickoff.match_service.client.FootballClient;
+import com.kickoff.match_service.dto.MatchDto;
 import com.kickoff.match_service.dto.MatchesResponseDto;
 import com.kickoff.match_service.mapper.GameMapper;
 import com.kickoff.match_service.model.Game;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GameCalendarService {
 
+    private static final String FINISHED = "FINISHED";
     private final FootballClient footballClient;
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
@@ -78,6 +80,22 @@ public class GameCalendarService {
 
         response.matches().forEach(gameResultProcessor::processResult);
         log.info("Processed gameweek {}", gameweek);
+    }
+
+    public void fetchAndProcessFinished() {
+        MatchesResponseDto response = footballClient.getAllMatches();
+
+        if (response == null || response.matches() == null) {
+            log.warn("No matches returned from API");
+            return;
+        }
+
+        List<MatchDto> finishedMatches = response.matches().stream()
+                .filter(m -> FINISHED.equals(m.status()))
+                .toList();
+
+        log.info("Found {} finished matches — processing", finishedMatches.size());
+        finishedMatches.forEach(gameResultProcessor::processResult);
     }
 
     public List<Game> findByGameweek(Integer gameweek) {

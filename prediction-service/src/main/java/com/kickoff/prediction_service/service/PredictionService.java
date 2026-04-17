@@ -1,5 +1,6 @@
 package com.kickoff.prediction_service.service;
 
+import com.kickoff.prediction_service.client.MatchServiceClient;
 import com.kickoff.prediction_service.dto.LeaderboardEntry;
 import com.kickoff.prediction_service.dto.PredictionRequest;
 import com.kickoff.prediction_service.dto.PredictionResponse;
@@ -29,6 +30,7 @@ public class PredictionService {
 
     private final PredictionRepository predictionRepository;
     private final PredictionMapper predictionMapper;
+    private final MatchServiceClient matchServiceClient;
     private final KafkaTemplate<String, CoinsAwardedEvent> kafkaTemplate;
 
     @Value("${kafka.topics.coins-award}")
@@ -36,13 +38,17 @@ public class PredictionService {
 
     public PredictionService(PredictionRepository predictionRepository,
                              PredictionMapper predictionMapper,
-                             KafkaTemplate<String, CoinsAwardedEvent> kafkaTemplate) {
+                             KafkaTemplate<String, CoinsAwardedEvent> kafkaTemplate,
+                             MatchServiceClient matchServiceClient) {
         this.predictionRepository = predictionRepository;
         this.predictionMapper = predictionMapper;
         this.kafkaTemplate = kafkaTemplate;
+        this.matchServiceClient = matchServiceClient;
     }
 
     public PredictionResponse createPrediction(PredictionRequest request) {
+        validatePredictionAllowed(request.gameExternalId());
+
         Prediction prediction = predictionRepository
                 .findByUserIdAndGameExternalId(request.userId(), request.gameExternalId())
                 .orElseGet(Prediction::new);
@@ -77,6 +83,10 @@ public class PredictionService {
         }
 
         log.info("Evaluated {} predictions for game {}", predictions.size(), event.externalId());
+    }
+
+    public List<LeaderboardEntry> getLeaderboard() {
+        return predictionRepository.findLeaderboard();
     }
 
     private void evaluateSingle(Prediction prediction, MatchCompletedEvent event) {
@@ -132,7 +142,11 @@ public class PredictionService {
                 prediction.getCoinsAwarded(), prediction.getUserId(), prediction.getResult().name());
     }
 
-    public List<LeaderboardEntry> getLeaderboard() {
-        return predictionRepository.findLeaderboard();
+    private void validatePredictionAllowed(Integer gameExternalId) {
+        OffsetDateTime kickoffTime = matchServiceClient.getKickoffTime(gameExternalId);
+        if (kickoffTime != null && OffsetDateTime.now().isAfter(kickoffTime)) {
+            throw new IllegalArgumentException(
+                    "Cannot predict for a match that has already started");
+        }
     }
 }

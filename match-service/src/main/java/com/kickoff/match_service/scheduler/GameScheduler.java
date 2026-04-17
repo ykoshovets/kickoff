@@ -1,6 +1,5 @@
 package com.kickoff.match_service.scheduler;
 
-import com.kickoff.match_service.client.FootballClient;
 import com.kickoff.match_service.service.GameCalendarService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -13,17 +12,14 @@ import org.springframework.stereotype.Component;
 public class GameScheduler {
 
     private final GameCalendarService gameCalendarService;
-    private final FootballClient footballClient;
 
-    public GameScheduler(GameCalendarService gameCalendarService, FootballClient footballClient) {
+    public GameScheduler(GameCalendarService gameCalendarService) {
         this.gameCalendarService = gameCalendarService;
-        this.footballClient = footballClient;
     }
 
-    @Scheduled(cron = "0 0 12 * * MON")
-    public void fetchLatestResults() {
-        Integer currentGameweek = footballClient.getCurrentGameweek();
-        log.info("Fetching results for current gameweek {}", currentGameweek);
-        gameCalendarService.fetchAndProcessGameweek(currentGameweek);
+    @Scheduled(cron = "0 0 1 * * *")
+    public void fetchAndProcessFinishedMatches() {
+        log.info("Daily fetch — processing finished matches");
+        gameCalendarService.fetchAndProcessFinished();
     }
 }

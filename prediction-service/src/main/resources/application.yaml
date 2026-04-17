@@ -37,6 +37,9 @@ spring:
 server:
   port: 8082
 
+match-service:
+  url: http://localhost:8081
+
 management:
   endpoints:
     web:
