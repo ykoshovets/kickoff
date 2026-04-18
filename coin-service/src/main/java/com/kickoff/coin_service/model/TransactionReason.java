@@ -6,7 +6,6 @@ import lombok.Getter;
 public enum TransactionReason {
     CORRECT_SCORE(TransactionType.CREDIT),
     CORRECT_RESULT(TransactionType.CREDIT),
-    ACHIEVEMENT(TransactionType.CREDIT),
     DUPLICATE_GOLD(TransactionType.CREDIT),
     CARD_SELL(TransactionType.CREDIT),
     PACK_PURCHASE(TransactionType.DEBIT);

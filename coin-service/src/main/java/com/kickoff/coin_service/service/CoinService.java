@@ -10,6 +10,9 @@ import com.kickoff.coin_service.model.Wallet;
 import com.kickoff.coin_service.repository.TransactionLogRepository;
 import com.kickoff.coin_service.repository.WalletRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,11 @@ public class CoinService {
         this.transactionLogMapper = transactionLogMapper;
     }
 
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public void processTransaction(UUID userId, Integer amount, TransactionReason reason) {
         Wallet wallet = walletRepository.findByUserId(userId)

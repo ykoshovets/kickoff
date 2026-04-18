@@ -1,0 +1,11 @@
+spring:
+  flyway:
+    default-schema: coin
+    schemas: coin
+  jpa:
+    properties:
+      hibernate:
+        default_schema: coin
+    show-sql: false
+  kafka:
+    bootstrap-servers: localhost:9092
