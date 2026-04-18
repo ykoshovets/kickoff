@@ -1,4 +1,4 @@
-package com.kickoff.match_service.config;
+package com.kickoff.match_service.Kafka;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
