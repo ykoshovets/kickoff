@@ -8,7 +8,6 @@ import com.kickoff.prediction_service.event.CoinsAwardedEvent;
 import com.kickoff.prediction_service.event.MatchCompletedEvent;
 import com.kickoff.prediction_service.mapper.PredictionMapper;
 import com.kickoff.prediction_service.model.Prediction;
-import com.kickoff.prediction_service.model.PredictionResult;
 import com.kickoff.prediction_service.repository.PredictionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +24,9 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class PredictionService {
 
-    private static final int CORRECT_RESULT_COINS = 5;
-    private static final int CORRECT_SCORE_COINS = 25;
-
     private final PredictionRepository predictionRepository;
     private final PredictionMapper predictionMapper;
+    private final PredictionEvaluator predictionEvaluator;
     private final MatchServiceClient matchServiceClient;
     private final KafkaTemplate<String, CoinsAwardedEvent> kafkaTemplate;
 
@@ -38,10 +35,12 @@ public class PredictionService {
 
     public PredictionService(PredictionRepository predictionRepository,
                              PredictionMapper predictionMapper,
+                             PredictionEvaluator predictionEvaluator,
                              KafkaTemplate<String, CoinsAwardedEvent> kafkaTemplate,
                              MatchServiceClient matchServiceClient) {
         this.predictionRepository = predictionRepository;
         this.predictionMapper = predictionMapper;
+        this.predictionEvaluator = predictionEvaluator;
         this.kafkaTemplate = kafkaTemplate;
         this.matchServiceClient = matchServiceClient;
     }
@@ -80,7 +79,14 @@ public class PredictionService {
         // Virtual Threads — evaluate all users in parallel
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             predictions.forEach(prediction ->
-                    executor.submit(() -> evaluateSingle(prediction, event))
+                    executor.submit(() -> {
+                        predictionEvaluator.evaluate(prediction, event);
+                        predictionRepository.save(prediction);
+                        if (prediction.getCoinsAwarded() > 0) {
+                            publishCoinsAwarded(prediction);
+                        }
+                    })
+
             );
         }
 
@@ -89,44 +95,6 @@ public class PredictionService {
 
     public List<LeaderboardEntry> getLeaderboard() {
         return predictionRepository.findLeaderboard();
-    }
-
-    private void evaluateSingle(Prediction prediction, MatchCompletedEvent event) {
-        prediction.setResult(evaluate(prediction, event));
-        prediction.setEvaluatedAt(OffsetDateTime.now());
-
-        int coins = switch (prediction.getResult()) {
-            case CORRECT_SCORE -> CORRECT_SCORE_COINS;
-            case CORRECT_RESULT -> CORRECT_RESULT_COINS;
-            default -> 0;
-        };
-
-        prediction.setCoinsAwarded(coins);
-        predictionRepository.save(prediction);
-
-        if (coins > 0) {
-            publishCoinsAwarded(prediction);
-        }
-    }
-
-    private PredictionResult evaluate(Prediction prediction, MatchCompletedEvent event) {
-        if (isScoreCorrect(prediction, event)) return PredictionResult.CORRECT_SCORE;
-        if (isResultCorrect(prediction, event)) return PredictionResult.CORRECT_RESULT;
-        return PredictionResult.INCORRECT;
-    }
-
-    private boolean isResultCorrect(Prediction prediction, MatchCompletedEvent event) {
-        int predictedResult = Integer.compare(
-                prediction.getPredictedHomeScore(),
-                prediction.getPredictedAwayScore()
-        );
-        int actualResult = Integer.compare(event.homeScore(), event.awayScore());
-        return predictedResult == actualResult;
-    }
-
-    private boolean isScoreCorrect(Prediction prediction, MatchCompletedEvent event) {
-        return prediction.getPredictedHomeScore().equals(event.homeScore())
-                && prediction.getPredictedAwayScore().equals(event.awayScore());
     }
 
     private void publishCoinsAwarded(Prediction prediction) {

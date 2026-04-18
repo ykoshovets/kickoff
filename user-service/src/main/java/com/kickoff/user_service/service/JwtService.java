@@ -15,11 +15,14 @@ import java.util.Date;
 @Slf4j
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final SecretKey signingKey;
+    private final Long expiration;
 
-    @Value("${jwt.expiration}")
-    private Long expiration;
+    public JwtService(@Value("${jwt.secret}") String secret,
+                      @Value("${jwt.expiration}") Long expiration) {
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expiration = expiration;
+    }
 
     public String generateToken(User user) {
         return Jwts.builder()
@@ -27,11 +30,7 @@ public class JwtService {
                 .claim("username", user.getUsername())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey())
+                .signWith(signingKey)
                 .compact();
-    }
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }
