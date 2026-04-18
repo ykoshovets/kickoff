@@ -1,3 +1,11 @@
+x-logging-common-opts: &common-opts
+  awslogs-region: "eu-central-1"
+  awslogs-group: "/kickoff/microservices"
+  awslogs-create-group: "true"
+  awslogs-multiline-pattern: "^\\d{4}-\\d{2}-\\d{2}"
+  mode: "non-blocking"
+  max-buffer-size: "4m"
+
 services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
@@ -14,6 +22,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
       KAFKA_HEAP_OPTS: "-Xmx512m -Xms256m"
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "kafka"
     restart: unless-stopped
 
   match-service:
@@ -31,6 +44,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx192m -Xms128m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "match-service"
     restart: unless-stopped
 
   prediction-service:
@@ -47,6 +65,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx128m -Xms64m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "prediction-service"
     restart: unless-stopped
 
   coin-service:
@@ -63,6 +86,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx128m -Xms64m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "coin-service"
     restart: unless-stopped
 
   user-service:
@@ -76,6 +104,11 @@ services:
       RDS_PASSWORD: ${RDS_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JAVA_TOOL_OPTIONS: "-Xmx128m -Xms64m"
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "user-service"
     restart: unless-stopped
 
   card-service:
@@ -93,6 +126,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx192m -Xms128m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "card-service"
     restart: unless-stopped
 
   pack-service:
@@ -109,6 +147,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx128m -Xms64m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "pack-service"
     restart: unless-stopped
 
   trade-service:
@@ -125,6 +168,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx192m -Xms128m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "trade-service"
     restart: unless-stopped
 
   fantasy-service:
@@ -142,6 +190,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx192m -Xms128m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "fantasy-service"
     restart: unless-stopped
 
   notification-service:
@@ -159,6 +212,11 @@ services:
       JAVA_TOOL_OPTIONS: "-Xmx128m -Xms64m"
     depends_on:
       - kafka
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "notification-service"
     restart: unless-stopped
 
   api-gateway:
@@ -170,4 +228,9 @@ services:
       ELASTICACHE_ENDPOINT: kickoff-redis.mkoudz.0001.euc1.cache.amazonaws.com
       JWT_SECRET: ${JWT_SECRET}
       JAVA_TOOL_OPTIONS: "-Xmx192m -Xms128m"
+    logging:
+      driver: "awslogs"
+      options:
+        <<: *common-opts
+        awslogs-stream: "api-gateway"
     restart: unless-stopped
