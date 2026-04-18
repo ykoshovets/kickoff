@@ -28,7 +28,7 @@ public class TradeStatusConsumer {
             }
     )
     @RetryableTopic(
-            attempts = "3",
+            attempts = "2",
             backOff = @BackOff(delay = 5000),
             dltTopicSuffix = ".DLT",
             topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE,
