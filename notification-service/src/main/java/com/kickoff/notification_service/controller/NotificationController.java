@@ -23,13 +23,13 @@ public class NotificationController {
 
     @GetMapping
     @Operation(summary = "Get all notifications", description = "Returns all notifications for a user ordered by date descending. Includes trade status changes and coin award events")
-    public List<NotificationResponse> getNotifications(@RequestParam UUID userId) {
+    public List<NotificationResponse> getNotifications(@RequestHeader("X-User-Id") UUID userId) {
         return notificationService.getNotifications(userId);
     }
 
     @GetMapping("/unread-count")
     @Operation(summary = "Get unread count", description = "Returns number of unread notifications. Cached in Redis — invalidated when new notification arrives or notifications are marked as read")
-    public ResponseEntity<Long> getUnreadCount(@RequestParam UUID userId) {
+    public ResponseEntity<Long> getUnreadCount(@RequestHeader("X-User-Id") UUID userId) {
         return ResponseEntity.ok(notificationService.getUnreadCount(userId));
     }
 
@@ -42,7 +42,7 @@ public class NotificationController {
 
     @PostMapping("/read-all")
     @Operation(summary = "Mark all as read", description = "Marks all notifications as read for a user and clears the Redis unread count cache")
-    public ResponseEntity<Void> markAllAsRead(@RequestParam UUID userId) {
+    public ResponseEntity<Void> markAllAsRead(@RequestHeader("X-User-Id") UUID userId) {
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
     }

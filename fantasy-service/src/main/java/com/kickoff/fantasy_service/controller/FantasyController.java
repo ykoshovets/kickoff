@@ -27,14 +27,17 @@ public class FantasyController {
 
     @PostMapping("/team")
     @Operation(summary = "Submit Fantasy XI", description = "Select exactly 11 cards from your collection as your fantasy team for a gameweek. Can be resubmitted to update selection before the gameweek starts")
-    public ResponseEntity<FantasyTeamResponse> submitTeam(@Valid @RequestBody FantasyTeamRequest request) {
-        return ResponseEntity.ok(fantasyService.submitTeam(request));
+    public ResponseEntity<FantasyTeamResponse> submitTeam(
+            @Valid @RequestBody FantasyTeamRequest request,
+            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader("X-Username") String username) {
+        return ResponseEntity.ok(fantasyService.submitTeam(request, userId, username));
     }
 
     @GetMapping("/team")
     @Operation(summary = "Get Fantasy XI", description = "Returns the submitted fantasy team for a specific user and gameweek")
     public ResponseEntity<FantasyTeamResponse> getTeam(
-            @RequestParam UUID userId,
+            @RequestHeader("X-User-Id") UUID userId,
             @RequestParam Integer gameweek) {
         return ResponseEntity.ok(fantasyService.getTeam(userId, gameweek));
     }

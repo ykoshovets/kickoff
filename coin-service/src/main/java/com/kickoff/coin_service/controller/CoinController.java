@@ -33,15 +33,15 @@ public class CoinController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @GetMapping("/balance/{userId}")
+    @GetMapping("/balance")
     @Operation(summary = "Get coin balance", description = "Returns current coin balance. Returns 0 if user has never received coins")
-    public BalanceDto getBalance(@PathVariable UUID userId) {
+    public BalanceDto getBalance(@RequestHeader("X-User-Id") UUID userId) {
         return coinService.getBalance(userId);
     }
 
-    @GetMapping("/history/{userId}")
+    @GetMapping("/history")
     @Operation(summary = "Get transaction history", description = "Returns all credit and debit transactions ordered by date. Includes reason for each transaction")
-    public List<TransactionLogDto> getTransactionHistory(@PathVariable UUID userId) {
+    public List<TransactionLogDto> getTransactionHistory(@RequestHeader("X-User-Id") UUID userId) {
         return coinService.getTransactionHistory(userId);
     }
 }

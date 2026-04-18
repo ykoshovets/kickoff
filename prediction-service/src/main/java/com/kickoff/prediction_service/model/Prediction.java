@@ -23,6 +23,9 @@ public class Prediction {
     private UUID userId;
 
     @Column(nullable = false)
+    private String username;
+
+    @Column(nullable = false)
     private Integer gameExternalId;
 
     @Column(nullable = false)

@@ -42,18 +42,18 @@ public class TradeService {
     }
 
     @Transactional
-    public TradeResponse createOffer(TradeOfferRequest request) {
-        validateOffer(request);
+    public TradeResponse createOffer(TradeOfferRequest request, UUID initiatorId) {
+        validateOffer(request, initiatorId);
 
         Trade trade = new Trade();
-        trade.setInitiatorId(request.initiatorId());
+        trade.setInitiatorId(initiatorId);
         trade.setReceiverId(request.receiverId());
         trade.setOfferedCardId(request.offeredCardId());
         trade.setRequestedCardId(request.requestedCardId());
 
         tradeRepository.save(trade);
         log.info("Trade offer created: {} offers card {} for card {}",
-                request.initiatorId(), request.offeredCardId(), request.requestedCardId());
+                initiatorId, request.offeredCardId(), request.requestedCardId());
 
         publishStatusChanged(trade);
         return tradeMapper.toResponse(trade);
@@ -135,9 +135,9 @@ public class TradeService {
         }
     }
 
-    private void validateOffer(TradeOfferRequest request) {
+    private void validateOffer(TradeOfferRequest request, UUID initiatorId) {
         CardDto offeredCard = cardServiceClient.getCard(request.offeredCardId());
-        if (offeredCard == null || !offeredCard.userId().equals(request.initiatorId())) {
+        if (offeredCard == null || !offeredCard.userId().equals(initiatorId)) {
             throw new IllegalArgumentException("Offered card does not belong to initiator");
         }
 
@@ -147,7 +147,7 @@ public class TradeService {
         }
 
         boolean alreadyPending = tradeRepository.existsByInitiatorIdAndOfferedCardIdAndStatus(
-                request.initiatorId(), request.offeredCardId(), TradeStatus.PENDING);
+                initiatorId, request.offeredCardId(), TradeStatus.PENDING);
         if (alreadyPending) {
             throw new IllegalStateException("Card already has a pending trade offer");
         }

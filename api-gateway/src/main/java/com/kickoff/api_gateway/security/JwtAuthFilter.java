@@ -53,9 +53,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         try {
             UUID userId = jwtService.extractUserId(token);
+            String username = jwtService.extractUsername(token);
 
             ServerWebExchange mutatedExchange = exchange.mutate()
-                    .request(r -> r.header("X-User-Id", userId.toString()))
+                    .request(r -> r
+                            .header("X-User-Id", userId.toString())
+                            .header("X-Username", username))
                     .build();
 
             log.debug("Authenticated request for user {} to {}", userId, path);

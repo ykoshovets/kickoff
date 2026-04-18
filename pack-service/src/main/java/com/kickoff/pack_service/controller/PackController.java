@@ -38,7 +38,7 @@ public class PackController {
     @Operation(summary = "Purchase a pack", description = "Deducts coins via coin-service REST call, records purchase and publishes pack.opened Kafka event for card generation. Pack types: SCOUT_PACK (3 cards, 5 coins), TRANSFER_PACK (5 cards, 30 coins, 3/week), GOLDEN_PACK (3 cards, 150 coins, 1/week), GAMEWEEK_PACK (4 cards, 80 coins, 1/week)")
     public ResponseEntity<BuyPackResponse> buyPack(
             @PathVariable PackType packType,
-            @RequestParam UUID userId) {
+            @RequestHeader("X-User-Id") UUID userId) {
         UUID purchaseId = packService.buyPack(userId, packType);
         PackDefinition definition = packService.getAvailablePacks().stream()
                 .filter(p -> p.getPackType() == packType)

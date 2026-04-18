@@ -41,20 +41,20 @@ public class FantasyService {
     }
 
     @Transactional
-    public FantasyTeamResponse submitTeam(FantasyTeamRequest request) {
-        validateCardsOwnedByUser(request.userId(), request.playerCardIds());
+    public FantasyTeamResponse submitTeam(FantasyTeamRequest request, UUID userId, String username) {
+        validateCardsOwnedByUser(userId, request.playerCardIds());
 
         FantasyTeam team = fantasyTeamRepository
-                .findByUserIdAndGameweek(request.userId(), request.gameweek())
+                .findByUserIdAndGameweek(userId, request.gameweek())
                 .orElseGet(FantasyTeam::new);
 
-        team.setUserId(request.userId());
+        team.setUserId(userId);
+        team.setUsername(username);
         team.setGameweek(request.gameweek());
         team.setPlayerCardIds(request.playerCardIds());
 
         fantasyTeamRepository.save(team);
-        log.info("Fantasy team submitted for user {} gameweek {}",
-                request.userId(), request.gameweek());
+        log.info("Fantasy team submitted for user {} gameweek {}", userId, request.gameweek());
 
         return fantasyMapper.toResponse(team);
     }
@@ -99,7 +99,7 @@ public class FantasyService {
 
         String leaderboardKey = LEADERBOARD_KEY + team.getGameweek();
         redisTemplate.opsForZSet().add(leaderboardKey,
-                team.getUserId().toString(), score.getTotalPoints());
+                team.getUsername(), score.getTotalPoints());
 
         log.info("User {} scored {} points for gameweek {}",
                 team.getUserId(), totalPoints, team.getGameweek());
@@ -142,7 +142,7 @@ public class FantasyService {
         return entries.stream()
                 .filter(entry -> entry.getValue() != null)
                 .map(entry -> new LeaderboardEntry(
-                        UUID.fromString(entry.getValue()),
+                        entry.getValue(),
                         entry.getScore()
                 ))
                 .toList();

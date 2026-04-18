@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record FantasyTeamResponse(
         UUID id,
-        UUID userId,
+        String username,
         Integer gameweek,
         List<UUID> playerCardIds,
         OffsetDateTime submittedAt

@@ -41,6 +41,10 @@ public class JwtService {
         return UUID.fromString(getClaims(token).getSubject());
     }
 
+    public String extractUsername(String token) {
+        return getClaims(token).get("username", String.class);
+    }
+
     private Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)

@@ -46,7 +46,7 @@ public class CardController {
     @PostMapping("/upgrade")
     @Operation(summary = "Upgrade card tier", description = "Combines two cards of the same player and tier into one card of the next tier. Bronze+Bronze→Silver, Silver+Silver→Gold")
     public ResponseEntity<Void> upgrade(
-            @RequestParam UUID userId,
+            @RequestHeader("X-User-Id") UUID userId,
             @RequestParam Integer playerId) {
         cardService.upgradeCard(userId, playerId);
         return ResponseEntity.ok().build();
@@ -56,7 +56,7 @@ public class CardController {
     @Operation(summary = "Sell a card for coins", description = "Permanently removes the card and credits the user's wallet. Bronze=1 coin, Silver=3 coins, Gold=7 coins")
     public ResponseEntity<Void> sell(
             @PathVariable UUID cardId,
-            @RequestParam UUID userId) {
+            @RequestHeader("X-User-Id") UUID userId) {
         cardService.sellCard(cardId, userId);
         return ResponseEntity.ok().build();
     }

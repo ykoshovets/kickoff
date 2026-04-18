@@ -17,13 +17,13 @@ public interface PredictionRepository extends JpaRepository<Prediction, UUID> {
 
     @Query("""
             SELECT new com.kickoff.prediction_service.dto.LeaderboardEntry(
-                p.userId,
+                p.username,
                 SUM(p.coinsAwarded),
                 SUM(CASE WHEN p.result = 'CORRECT_RESULT' THEN 1 ELSE 0 END),
                 SUM(CASE WHEN p.result = 'CORRECT_SCORE' THEN 1 ELSE 0 END)
             )
             FROM Prediction p
-            GROUP BY p.userId
+            GROUP BY p.username
             ORDER BY SUM(p.coinsAwarded) DESC
             """)
     List<LeaderboardEntry> findLeaderboard();

@@ -26,16 +26,18 @@ public class PredictionController {
     }
 
     @PostMapping
-    @Operation(summary = "Submit a match prediction", description = "Predict the exact score for a Premier League match. Must be submitted before kickoff. Correct result = 5 coins, correct score = 25 coins. Can be updated until match starts")
-    public ResponseEntity<PredictionResponse> create(@Valid @RequestBody PredictionRequest request) {
+    public ResponseEntity<PredictionResponse> create(
+            @Valid @RequestBody PredictionRequest request,
+            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader("X-Username") String username) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(predictionService.createPrediction(request));
+                .body(predictionService.createPrediction(request, userId, username));
     }
 
     @GetMapping
     @Operation(summary = "Get predictions for gameweek", description = "Returns all predictions made by a user for a specific gameweek including evaluation result and coins awarded")
     public List<PredictionResponse> getPredictions(
-            @RequestParam UUID userId,
+            @RequestHeader("X-User-Id") UUID userId,
             @RequestParam Integer gameweek) {
         return predictionService.getPredictions(userId, gameweek);
     }

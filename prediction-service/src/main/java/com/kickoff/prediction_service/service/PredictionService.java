@@ -46,14 +46,16 @@ public class PredictionService {
         this.matchServiceClient = matchServiceClient;
     }
 
-    public PredictionResponse createPrediction(PredictionRequest request) {
+    public PredictionResponse createPrediction(PredictionRequest request, UUID userId, String username) {
         validatePredictionAllowed(request.gameExternalId());
 
         Prediction prediction = predictionRepository
-                .findByUserIdAndGameExternalId(request.userId(), request.gameExternalId())
+                .findByUserIdAndGameExternalId(userId, request.gameExternalId())
                 .orElseGet(Prediction::new);
 
         predictionMapper.map(request, prediction);
+        prediction.setUserId(userId);
+        prediction.setUsername(username);
         return predictionMapper.toResponse(predictionRepository.save(prediction));
     }
 

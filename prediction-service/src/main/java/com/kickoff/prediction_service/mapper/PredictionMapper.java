@@ -13,6 +13,7 @@ import java.util.List;
 public interface PredictionMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     @Mapping(target = "result", ignore = true)
     @Mapping(target = "coinsAwarded", ignore = true)
     @Mapping(target = "evaluatedAt", ignore = true)
