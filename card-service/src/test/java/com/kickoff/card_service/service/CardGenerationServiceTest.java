@@ -48,6 +48,20 @@ class CardGenerationServiceTest {
     }
 
     @Test
+    void selectPlayersShouldReturnUniquePlayersOnly() {
+        when(matchServiceClient.getAllPlayers()).thenReturn(List.of(
+                playerWith(1, 1, 100, 100),
+                playerWith(2, 2, 100, 100),
+                playerWith(3, 3, 100, 100)
+        ));
+
+        List<PlayerDto> result = cardGenerationService.selectPlayers(3, null);
+
+        long uniqueCount = result.stream().map(PlayerDto::externalId).distinct().count();
+        assertEquals(result.size(), uniqueCount);
+    }
+
+    @Test
     void selectPlayersShouldIncludePlayerFromGuaranteedTeam() {
         when(matchServiceClient.getAllPlayers()).thenReturn(List.of(
                 playerWith(1, 1, 100, 100),
@@ -61,7 +75,7 @@ class CardGenerationServiceTest {
     }
 
     @Test
-    void selectPlayersShouldReturnNormalCountWhenGuaranteedTeamNotFound() {
+    void selectPlayersShouldReturnFewerCardsWhenPoolExhausted() {
         when(matchServiceClient.getAllPlayers()).thenReturn(List.of(
                 playerWith(1, 1, 100, 100),
                 playerWith(2, 2, 100, 100)
@@ -69,7 +83,7 @@ class CardGenerationServiceTest {
 
         List<PlayerDto> result = cardGenerationService.selectPlayers(3, 99);
 
-        assertEquals(3, result.size());
+        assertEquals(2, result.size());
     }
 
     @Test

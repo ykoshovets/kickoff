@@ -1,0 +1,14 @@
+spring:
+  flyway:
+    default-schema: card
+    schemas: card
+  jpa:
+    properties:
+      hibernate:
+        default_schema: card
+    show-sql: false
+  kafka:
+    bootstrap-servers: localhost:9092
+  threads:
+    virtual:
+      enabled: true

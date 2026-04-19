@@ -26,23 +26,28 @@ public class CardGenerationService {
         }
 
         List<PlayerDto> selected = new ArrayList<>();
+        List<PlayerDto> pool = new ArrayList<>(allPlayers);
 
         if (guaranteedTeamId != null) {
-            List<PlayerDto> teamPlayers = allPlayers.stream()
+            List<PlayerDto> teamPlayers = pool.stream()
                     .filter(p -> p.teamExternalId().equals(guaranteedTeamId))
                     .toList();
 
             if (!teamPlayers.isEmpty()) {
-                selected.add(weightedRandom(teamPlayers));
-                count--;
+                addSelectedPlayer(selected, pool, weightedRandom(teamPlayers));
             }
         }
 
-        for (int i = 0; i < count; i++) {
-            selected.add(weightedRandom(allPlayers));
+        while (selected.size() < count && !pool.isEmpty()) {
+            addSelectedPlayer(selected, pool, weightedRandom(pool));
         }
 
         return selected;
+    }
+
+    private void addSelectedPlayer(List<PlayerDto> selected, List<PlayerDto> pool, PlayerDto player) {
+        selected.add(player);
+        pool.removeIf(p -> p.externalId().equals(player.externalId()));
     }
 
     private PlayerDto weightedRandom(List<PlayerDto> players) {
