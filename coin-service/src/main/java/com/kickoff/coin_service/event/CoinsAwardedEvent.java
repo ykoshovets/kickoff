@@ -5,7 +5,6 @@ import java.util.UUID;
 public record CoinsAwardedEvent(
         UUID userId,
         Integer amount,
-        String reason,
-        UUID referenceId
+        String reason
 ) {
 }

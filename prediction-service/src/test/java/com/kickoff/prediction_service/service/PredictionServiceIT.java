@@ -139,7 +139,7 @@ class PredictionServiceIT {
         assertNotNull(received, "CoinsAwardedEvent should have been published");
         assertEquals(userId, received.value().userId());
         assertEquals(25, received.value().amount());
-        assertEquals(PredictionResult.CORRECT_SCORE, received.value().reason());
+        assertEquals(PredictionResult.CORRECT_SCORE.name(), received.value().reason());
     }
 
     @Test
@@ -160,7 +160,7 @@ class PredictionServiceIT {
                 receivedEvents.poll(10, TimeUnit.SECONDS);
         assertNotNull(received, "CoinsAwardedEvent should have been published");
         assertEquals(5, received.value().amount());
-        assertEquals(PredictionResult.CORRECT_RESULT, received.value().reason());
+        assertEquals(PredictionResult.CORRECT_RESULT.name(), received.value().reason());
     }
 
     @Test
