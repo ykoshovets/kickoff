@@ -47,7 +47,10 @@ jobs:
             ${{ runner.os }}-maven-${{ matrix.service }}-
 
       - name: Run tests for ${{ matrix.service }}
-        run: cd ${{ matrix.service }} && ./mvnw test -B -ntp
+        run: |
+          cd ${{ matrix.service }}
+          chmod +x mvnw
+          ./mvnw test -B -ntp
 
   build-and-push:
     needs: test
