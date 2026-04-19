@@ -1,0 +1,12 @@
+spring:
+  flyway:
+    default-schema: prediction
+    schemas: prediction
+  jpa:
+    properties:
+      hibernate:
+        default_schema: prediction
+    show-sql: false
+  threads:
+    virtual:
+      enabled: true
