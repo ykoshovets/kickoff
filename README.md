@@ -15,6 +15,7 @@ Deployed on AWS with a fully automated CI/CD pipeline.
 - [Game Mechanics](#game-mechanics)
 - [Services](#services)
 - [Kafka Event Flow](#kafka-event-flow)
+- [Testing](#testing)
 - [Getting Started](#getting-started)
 - [API Reference](#api-reference)
 - [AWS Infrastructure](#aws-infrastructure)
@@ -84,29 +85,32 @@ design, and cloud deployment.
 - **Kafka for async communication** — services are decoupled; match results fan out to predictions, fantasy, and pack
   services simultaneously
 - **REST for synchronous operations** — coin deduction before pack opening requires immediate confirmation
-- **Redis for caching and leaderboards** — player data cached for 30 days (football-data.org rate limits), fantasy
-  leaderboard as sorted set
+- **Redis for caching** — player data cached for 30 days (football-data.org rate limits), fantasy leaderboard as sorted
+  set
+- **Optimistic locking** — `@Version` on wallet entity prevents race conditions during concurrent coin awards
+- **Weighted random without replacement** — card generation uses a mutable pool to guarantee unique players per pack
 
 ---
 
 ## Tech Stack
 
-| Category         | Technology                     |
-|------------------|--------------------------------|
-| Language         | Java 21                        |
-| Framework        | Spring Boot 4.0.5              |
-| Messaging        | Apache Kafka (Confluent KRaft) |
-| Database         | PostgreSQL 16                  |
-| Cache            | Redis 7                        |
-| ORM              | Hibernate 6 + Spring Data JPA  |
-| Migrations       | Flyway                         |
-| Mapping          | MapStruct                      |
-| Auth             | Spring Security + JJWT 0.12.6  |
-| API Docs         | Springdoc OpenAPI              |
-| Containerization | Docker + Docker Compose        |
-| Cloud            | AWS (EC2, RDS, ElastiCache)    |
-| CI/CD            | GitHub Actions + GHCR          |
-| Data Source      | football-data.org API          |
+| Category         | Technology                       |
+|------------------|----------------------------------|
+| Language         | Java 21                          |
+| Framework        | Spring Boot 4.0.5                |
+| Messaging        | Apache Kafka (Confluent KRaft)   |
+| Database         | PostgreSQL 16                    |
+| Cache            | Redis 7                          |
+| ORM              | Hibernate 6 + Spring Data JPA    |
+| Migrations       | Flyway                           |
+| Mapping          | MapStruct                        |
+| Auth             | Spring Security + JJWT 0.12.6    |
+| API Docs         | Springdoc OpenAPI                |
+| Containerization | Docker + Docker Compose          |
+| Cloud            | AWS (EC2, RDS, ElastiCache)      |
+| CI/CD            | GitHub Actions + GHCR            |
+| Testing          | JUnit 5, Mockito, Testcontainers |
+| Data Source      | football-data.org API            |
 
 ### Java 21 Features Used
 
@@ -143,9 +147,10 @@ design, and cloud deployment.
 - **Bronze** → **Silver**: 2 Bronze cards of same player
 - **Silver** → **Gold**: 2 Silver cards of same player
 
-### Card Generation — Weighted Random
+### Card Generation — Weighted Random Without Replacement
 
-300 players across 20 Premier League teams. Cards are generated using a weighted random algorithm:
+300 players across 20 Premier League teams. Cards are generated using a weighted random algorithm that guarantees no
+duplicate players within a single pack:
 
 ```
 weight = teamRarityWeight × playerRarityWeight
@@ -157,7 +162,7 @@ weight = teamRarityWeight × playerRarityWeight
 - Key players: `playerRarityWeight = 60`
 - Squad players: `playerRarityWeight = 100`
 
-Lower weight = rarer card.
+Lower weight = rarer card. Each selection removes the picked player from the pool, ensuring uniqueness per pack.
 
 ---
 
@@ -170,13 +175,15 @@ Publishes `match.results` events to Kafka after each gameweek fetch.
 
 ### prediction-service `:8082`
 
-Accepts match predictions before kickoff. Consumes `match.results` and evaluates each user's prediction using Virtual
-Threads for parallel processing — awarding coins via Kafka for correct results and scores.
+Accepts match predictions before kickoff (validated against match kickoff time). Consumes `match.results` and evaluates
+each user's prediction using Virtual Threads for parallel processing — awarding coins via Kafka for correct results and
+scores.
 
 ### coin-service `:8083`
 
-Manages user coin wallets with optimistic locking (`@Version`) to prevent race conditions. Maintains a full transaction
-log. Consumes `coins.award` events.
+Manages user coin wallets with optimistic locking (`@Version`) to prevent race conditions. Uses `@Retryable` with
+exponential backoff to handle `ObjectOptimisticLockingFailureException`. Maintains a full transaction log. Consumes
+`coins.award` events.
 
 ### user-service `:8084`
 
@@ -185,8 +192,9 @@ api-gateway.
 
 ### card-service `:8085`
 
-Core game service. Consumes `pack.opened` events and generates cards using weighted random selection. Fetches player
-data from match-service via REST with 30-day Redis cache. Handles card upgrades and sells.
+Core game service. Consumes `pack.opened` events and generates cards using weighted random selection without
+replacement.
+Fetches player data from match-service via REST with 30-day Redis cache. Handles card upgrades and sells.
 
 ### pack-service `:8086`
 
@@ -209,8 +217,8 @@ Consumes `trade.status-changed` and `coins.award` events. Stores in-app notifica
 
 ### api-gateway `:8080`
 
-Spring Cloud Gateway (WebFlux). Validates JWT on every request, injects `X-User-Id` header for downstream services.
-Public paths: `/register`, `/login`.
+Spring Cloud Gateway (WebFlux). Validates JWT on every request, injects `X-User-Id` and `X-Username` headers for
+downstream services. Public paths: `/register`, `/login`.
 
 ---
 
@@ -247,7 +255,14 @@ Public paths: `/register`, `/login`.
 | `pack.opened` | pack-service | card-service |
 | `trade.status-changed` | trade-service | notification-service |
 
+All Kafka consumers use `@RetryableTopic` with fixed delay (5s), 2 attempts, and `.DLT` suffix for dead letter topics.
+
 ---
+
+## Testing
+
+The project includes unit tests for core business logic and Testcontainers integration tests for services that interact
+with PostgreSQL, Kafka, and Redis. Integration tests run automatically in the CI/CD pipeline on every push to `main`.
 
 ## Getting Started
 
@@ -340,7 +355,6 @@ curl -X POST http://localhost:8080/api/v1/predictions \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "userId": "<userId>",
     "gameExternalId": 537786,
     "gameweek": 1,
     "predictedHomeScore": 2,
@@ -358,21 +372,21 @@ curl -X POST http://localhost:8080/api/v1/games/fetch/1 \
 **Check coin balance:**
 
 ```bash
-curl http://localhost:8080/api/v1/coins/balance/<userId> \
+curl http://localhost:8080/api/v1/coins/balance \
   -H "Authorization: Bearer <token>"
 ```
 
 **Buy a pack:**
 
 ```bash
-curl -X POST "http://localhost:8080/api/v1/packs/SCOUT_PACK/buy?userId=<userId>" \
+curl -X POST "http://localhost:8080/api/v1/packs/SCOUT_PACK/buy" \
   -H "Authorization: Bearer <token>"
 ```
 
 **View card collection:**
 
 ```bash
-curl http://localhost:8080/api/v1/cards/collection/<userId> \
+curl http://localhost:8080/api/v1/cards/collection \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -383,7 +397,6 @@ curl -X POST http://localhost:8080/api/v1/trades/offer \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "initiatorId": "<userId>",
     "receiverId": "<otherUserId>",
     "offeredCardId": "<cardId>",
     "requestedCardId": "<otherCardId>"
@@ -397,7 +410,6 @@ curl -X POST http://localhost:8080/api/v1/fantasy/team \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "userId": "<userId>",
     "gameweek": 1,
     "playerCardIds": ["<cardId1>", "...", "<cardId11>"]
   }'
@@ -427,22 +439,31 @@ curl -X POST http://localhost:8080/api/v1/fantasy/team \
 ```
 
 - **EC2 t3.small** — all 10 services + Kafka in Docker containers
-- **RDS db.t3.micro** — PostgreSQL with per-service schemas
-- **ElastiCache t3.micro** — Redis for player cache and leaderboards
+- **RDS db.t3.micro** — PostgreSQL 16 with per-service schemas
+- **ElastiCache t3.micro** — Redis 7 for player cache and leaderboards
 - **Elastic IP** — static public IP `18.196.247.84`
 - **Security Groups** — EC2 accessible on :8080, RDS/Redis accessible only from EC2
 - **AWS Secrets Manager** — DB password, JWT secret, API key stored securely
+- **IAM Role** — EC2 instance role with Secrets Manager and CloudWatch permissions
+- **CloudWatch** — structured JSON logs, 3-day retention, per-service log streams
 
 ---
 
 ## CI/CD Pipeline
 
-Every push to `main` triggers a full build and deploy:
+Every push to `main` triggers a full test, build, and deploy:
 
 ```
 Push to main
     │
     ▼
+┌─────────────────────────────────────┐
+│  10 parallel test jobs              │
+│  (unit tests + Testcontainers ITs)  │
+│  fail-fast: false                   │
+└─────────────────┬───────────────────┘
+                  │ all pass
+                  ▼
 ┌─────────────────────────────────────┐
 │  10 parallel Docker builds          │
 │  (Maven inside multi-stage build)   │
@@ -454,7 +475,6 @@ Push to main
 │  SSH into EC2                       │
 │  → Fetch secrets from AWS Secrets   │
 │    Manager                          │
-│  → Copy docker-compose.prod.yml     │
 │  → Pull new images from GHCR        │
 │  → Gradual startup (60s intervals)  │
 └─────────────────────────────────────┘
@@ -467,18 +487,16 @@ deploy time — never stored in git or docker-compose.
 
 ## Future Improvements
 
-- **Input validation** — Bean Validation (`@Valid`) on all request DTOs
-- **Dead letter topics** — `@RetryableTopic` for all Kafka consumers
 - **Milestone detection** — Full team collection → Golden Pack voucher
-- **Kickoff time validation** — Block predictions after match starts
 - **Gameweek Pack** — Guaranteed player from top-scoring team
 - **Fantasy scoring** — Player-level stats when paid API tier available
 - **Role-based access control** — Admin endpoints, 403 responses
 - **Token revocation** — Redis blacklist for logout
 - **Rate limiting** — Redis RequestRateLimiter in api-gateway
-- **Testcontainers** — Integration tests for card generation, coin concurrency, trade atomicity
+- **Healthcheck-based deployment** — Replace sleep intervals with Docker healthchecks
 - **AWS ECR** — Replace GHCR with ECR + IAM roles
 - **Frontend** — React + Vite + Tailwind
+- **HTTPS** — Nginx + Let's Encrypt + DuckDNS
 
 ---
 
@@ -487,5 +505,3 @@ deploy time — never stored in git or docker-compose.
 **Yevhenii Koshovets** — Java Developer
 
 GitHub: [@ykoshovets](https://github.com/ykoshovets)
-
-AWS Certified Developer – Associate
