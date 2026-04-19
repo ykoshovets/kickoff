@@ -49,5 +49,7 @@ springdoc:
     path: /swagger-ui.html
 
 football:
+  competition: PL
+  season: 2025
   api:
     key: ${FOOTBALL_API_KEY}

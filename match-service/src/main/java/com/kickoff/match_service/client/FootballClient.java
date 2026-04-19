@@ -1,9 +1,9 @@
 package com.kickoff.match_service.client;
 
-import com.kickoff.match_service.dto.CompetitionResponseDto;
 import com.kickoff.match_service.dto.MatchesResponseDto;
 import com.kickoff.match_service.dto.TeamResponseDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -12,15 +12,21 @@ import org.springframework.web.client.RestClient;
 public class FootballClient {
 
     private final RestClient restClient;
+    private final String competition;
+    private final String season;
 
-    public FootballClient(RestClient restClient) {
+    public FootballClient(RestClient restClient,
+                          @Value("${football.competition}") String competition,
+                          @Value("${football.season}") String season) {
         this.restClient = restClient;
+        this.competition = competition;
+        this.season = season;
     }
 
-    public TeamResponseDto getTeams(String season) {
+    public TeamResponseDto getTeams() {
         return restClient
                 .get()
-                .uri("/competitions/PL/teams?season={season}", season)
+                .uri("/competitions/{competition}/teams?season={season}", competition, season)
                 .retrieve()
                 .body(TeamResponseDto.class);
     }
@@ -28,7 +34,7 @@ public class FootballClient {
     public MatchesResponseDto getAllMatches() {
         return restClient
                 .get()
-                .uri("/competitions/PL/matches?season=2025")
+                .uri("/competitions/{competition}/matches?season={season}", competition, season)
                 .retrieve()
                 .body(MatchesResponseDto.class);
     }
@@ -36,17 +42,9 @@ public class FootballClient {
     public MatchesResponseDto getMatchesByGameweek(Integer gameweek) {
         return restClient
                 .get()
-                .uri("/competitions/PL/matches?matchday={gameweek}&season=2025", gameweek)
+                .uri("/competitions/{competition}/matches?matchday={gameweek}&season={season}",
+                        competition, gameweek, season)
                 .retrieve()
                 .body(MatchesResponseDto.class);
-    }
-
-    public Integer getCurrentGameweek() {
-        CompetitionResponseDto response = restClient
-                .get()
-                .uri("/competitions/PL?season=2025")
-                .retrieve()
-                .body(CompetitionResponseDto.class);
-        return response.season().currentMatchday();
     }
 }

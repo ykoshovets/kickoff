@@ -34,7 +34,7 @@ public class SquadSeedingService {
     public void seedSquads() {
         log.info("Starting squad seeding...");
 
-        TeamResponseDto response = footballClient.getTeams("2025");
+        TeamResponseDto response = footballClient.getTeams();
 
         if (response == null || response.teams() == null) {
             log.error("No teams returned from API");
