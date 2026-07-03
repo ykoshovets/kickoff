@@ -3,7 +3,7 @@
 A production-grade microservices backend built with Java 21, Spring Boot 4, Apache Kafka, PostgreSQL, and Redis.
 Deployed on AWS with a fully automated CI/CD pipeline.
 
-> **Live API:** `http://18.196.247.84:8080`
+> **Live API:** `http://18.196.247.84:8080` (Currently unavailable!)
 
 ---
 
